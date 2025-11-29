@@ -1,65 +1,31 @@
 workflows:
   ionic-capacitor-ios-build:
     name: Ionic Capacitor iOS Build
-    # Choose a high-performance machine with Xcode/macOS
     instance_type: mac_mini_m1
     
     environment:
-      # Use the latest LTS Node version for Ionic/Angular
       node: v20.10.0
-      # Specify the Xcode version required by your Capacitor project
       xcode: 15.3
-      # Set your app's bundle identifier here
-      # This MUST match the 'appId' in your capacitor.config.json
       vars:
-        BUNDLE_ID: com.mycompany.myApp
+        BUNDLE_ID: online.regionalhomeforgirls.larea
       
     scripts:
       - name: Install Node dependencies
-        # Install dependencies and the Angular CLI if needed
         script: |
           npm install
           
       - name: Build the Ionic Web App
-        # This command creates the web assets in the 'www' directory
         script: |
           ionic build --prod
           
       - name: Copy web assets to iOS project
-        # Synchronize the web assets with the native project
         script: |
           npx cap sync ios
           
       - name: Install CocoaPods dependencies
-        # Navigate to the native project folder and install pods
         script: |
-          cd ios
+          cd ios/App
           pod install
           
     artifacts:
-      # Define what files to output and save
-      - build/ios/ipa/*.ipa
-      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
-      
-    publishing:
-      # --- CODE SIGNING AND PUBLISHING ---
-      # This section requires configuration in the Codemagic UI (Step 2)
-      ios_signing:
-        # Use App Store Connect API key authentication
-        api_key: $CM_API_KEY_ID
-        key_id: $CM_KEY_ID
-        issuer_id: $CM_ISSUER_ID
-      
-      # For deploying to TestFlight/App Store (Optional)
-      app_store_connect:
-        auth:
-          api_key: $CM_API_KEY_ID
-          key_id: $CM_KEY_ID
-          issuer_id: $CM_ISSUER_ID
-        
-        # Build configuration for release
-        submit_for_review: false
-        automatic_versioning: true
-        
-        # Specify the target build configuration
-        build_output_path: build/ios/ipa/
+      - ios/App/build/**/*.ipa
