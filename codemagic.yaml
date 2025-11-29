@@ -10,13 +10,18 @@ workflows:
         BUNDLE_ID: online.regionalhomeforgirls.larea
       
     scripts:
-      - name: Install Capacitor CLI
+      - name: Install project dependencies
         script: |
-          npm install -g @capacitor/cli
+          npm install
           
-      - name: Sync Capacitor (use existing files)
+      - name: Check Capacitor config
         script: |
-          npx cap sync ios || npx cap copy ios
+          ls -la capacitor.config.*
+          cat capacitor.config.ts || cat capacitor.config.json || echo "No config found"
+          
+      - name: Sync Capacitor to iOS
+        script: |
+          npx cap sync ios
           
       - name: Install CocoaPods
         script: |
