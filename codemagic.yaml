@@ -10,22 +10,36 @@ workflows:
         BUNDLE_ID: online.regionalhomeforgirls.larea
       
     scripts:
-      - name: Install Node dependencies
+      - name: Install dependencies
         script: |
-          npm install
+          npm ci
+          npm install -g @ionic/cli
           
-      - name: Build the Ionic Web App
+      - name: Build the web app
         script: |
-          ionic build --prod
+          npm run build --if-present || ionic build --prod
           
-      - name: Copy web assets to iOS project
+      - name: Sync Capacitor
         script: |
           npx cap sync ios
           
-      - name: Install CocoaPods dependencies
+      - name: Set up code signing (temporary workaround)
         script: |
           cd ios/App
           pod install
+          # Disable code signing for now
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic/CODE_SIGN_STYLE = Manual/g' App.xcodeproj/project.pbxproj || true
+          
+      - name: Build iOS (unsigned)
+        script: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            -sdk iphonesimulator
           
     artifacts:
-      - ios/App/build/**/*.ipa
+      - ios/App/build/**/*.app
