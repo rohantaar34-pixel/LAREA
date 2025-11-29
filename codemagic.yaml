@@ -10,36 +10,29 @@ workflows:
         BUNDLE_ID: online.regionalhomeforgirls.larea
       
     scripts:
-      - name: Install dependencies
+      - name: Install Capacitor CLI
         script: |
-          npm ci
-          npm install -g @ionic/cli
+          npm install -g @capacitor/cli
           
-      - name: Build the web app
+      - name: Sync Capacitor (use existing files)
         script: |
-          npm run build --if-present || ionic build --prod
+          npx cap sync ios || npx cap copy ios
           
-      - name: Sync Capacitor
-        script: |
-          npx cap sync ios
-          
-      - name: Set up code signing (temporary workaround)
+      - name: Install CocoaPods
         script: |
           cd ios/App
           pod install
-          # Disable code signing for now
-          sed -i '' 's/CODE_SIGN_STYLE = Automatic/CODE_SIGN_STYLE = Manual/g' App.xcodeproj/project.pbxproj || true
           
-      - name: Build iOS (unsigned)
+      - name: Build iOS app (simulator)
         script: |
           cd ios/App
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -configuration Debug \
+            -sdk iphonesimulator \
+            -derivedDataPath build \
             CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            -sdk iphonesimulator
+            CODE_SIGNING_REQUIRED=NO
           
     artifacts:
-      - ios/App/build/**/*.app
+      - ios/App/build/Build/Products/**/*.app
